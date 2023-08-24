@@ -1,10 +1,12 @@
 package com.example.prog4.conf;
 
+import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -50,10 +52,19 @@ public class Prog4Configuration {
         );
     }
 
+    @Primary
+    @Bean(name = "postgres1DatasourceProperties")
+    @ConfigurationProperties("spring.datasource")
+    public DataSourceProperties postgres1DatasourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Primary
     @Bean(name = "postgres1Datasource")
-    @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource postgres1DataSource() {
-        return DataSourceBuilder.create().build();
+        return postgres1DatasourceProperties().initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     @Bean(name = "postgres1EntityManagerFactoryBuilder")

@@ -1,11 +1,13 @@
 package com.example.prog4.conf;
 
 import com.example.prog4.repository.postgres2.entity.CNAPSEmployee;
+import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -52,10 +54,17 @@ public class CNAPSConfiguration {
         );
     }
 
-    @Bean(name = "postgres2Datasource")
+    @Bean(name = "postgres2DatasourceProperties")
     @ConfigurationProperties(prefix = "spring.second-datasource")
+    public DataSourceProperties postgres2DatasourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean(name = "postgres2Datasource")
     public DataSource postgres2DataSource() {
-        return DataSourceBuilder.create().build();
+        return postgres2DatasourceProperties().initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     @Bean(name = "postgres2EntityManagerFactoryBuilder")
