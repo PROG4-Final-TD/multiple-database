@@ -45,7 +45,9 @@ public class EmployeeViewController extends PopulateController {
     @GetMapping("/edit/{eId}")
     public String editEmployee(@PathVariable String eId, Model model) {
         Employee toEdit = employeeMapper.toView(employeeService.getOne(eId));
+        String cnaps = employeeService.getEmployeeCnaps(eId);
         model.addAttribute("employee", toEdit);
+        model.addAttribute("cnapsNumber", cnaps);
 
         return "employee_edition";
     }
@@ -53,7 +55,9 @@ public class EmployeeViewController extends PopulateController {
     @GetMapping("/show/{eId}")
     public String showEmployee(@PathVariable String eId, Model model) {
         Employee toShow = employeeMapper.toView(employeeService.getOne(eId));
+        String cnaps = employeeService.getEmployeeCnaps(eId);
         model.addAttribute("employee", toShow);
+        model.addAttribute("cnaps", cnaps);
 
         return "employee_show";
     }
