@@ -1,10 +1,15 @@
 package com.example.prog4.service;
 
+import com.example.prog4.controller.mapper.EmployeeMapper;
 import com.example.prog4.model.EmployeeFilter;
-import com.example.prog4.repository.RepositoryImpl;
+import com.example.prog4.model.exception.NotFoundException;
+import com.example.prog4.repository.postgres1.EmployeeRepository;
 import com.example.prog4.repository.postgres1.dao.EmployeeManagerDao;
 import com.example.prog4.repository.postgres1.entity.Employee;
+import com.example.prog4.repository.postgres2.CNAPSRepository;
+import com.example.prog4.repository.postgres2.entity.CNAPSEmployee;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,13 +21,20 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class EmployeeService {
-    private RepositoryImpl repositoryImpl;
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private CNAPSRepository cnapsRepository;
+
+    private EmployeeMapper mapper;
     private EmployeeManagerDao employeeManagerDao;
 
 
     @Transactional
     public Employee getOne(String id) {
-        return repositoryImpl.findById(id);
+        return employeeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Not found id=" + id));
     }
 
     @Transactional
@@ -42,10 +54,26 @@ public class EmployeeService {
     }
 
     public void saveOne(com.example.prog4.model.Employee employee) {
-        repositoryImpl.save(employee);
+        Employee saved = employeeRepository.save(mapper.toDomain(employee));
+        cnapsRepository.save(CNAPSEmployee.builder()
+                .endToEndId(saved.getId())
+                .address(employee.getAddress())
+                .cin(employee.getCin())
+                .cnaps(employee.getCnaps())
+                .firstName(employee.getFirstName())
+                .lastName(employee.getLastName())
+                .birthDate(employee.getBirthDate())
+                .childrenNumber(employee.getChildrenNumber())
+                .personalEmail(employee.getPersonalEmail())
+                .professionalEmail(employee.getProfessionalEmail())
+                .entranceDate(employee.getEntranceDate())
+                .departureDate(employee.getDepartureDate())
+                .build());
     }
 
     public String getEmployeeCnaps(String idEmployee) {
-        return repositoryImpl.getCnapsById(idEmployee);
+        CNAPSEmployee cnapsEmployee = cnapsRepository.findById(idEmployee)
+                .orElseThrow(() -> new NotFoundException("Not found id=" + idEmployee));
+        return cnapsEmployee.getCnaps();
     }
 }
